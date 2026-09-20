@@ -4,6 +4,8 @@ Pastewell is a tiny, local-only clipboard history app for macOS 14 and newer.
 
 It is open-source software released under the [MIT License](LICENSE).
 
+Website: [tobzzy.github.io/Pastewell](https://tobzzy.github.io/Pastewell/)
+
 ## Download
 
 Download the latest universal macOS ZIP from the repository's **Releases**
@@ -85,3 +87,6 @@ Instructions for GitHub Releases and optional Apple notarization are in
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and report
 security issues according to [SECURITY.md](SECURITY.md).
+
+The product website lives in [`website/`](website). See its README for local
+preview and future App Store, review, and sponsorship integration notes.
