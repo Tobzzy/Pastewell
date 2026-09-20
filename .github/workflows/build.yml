@@ -1,0 +1,16 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build universal app
+        run: ./build-app.sh
+      - name: Verify both architectures
+        run: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -archs Pastewell.app/Contents/MacOS/Pastewell | grep -q 'arm64 x86_64'
