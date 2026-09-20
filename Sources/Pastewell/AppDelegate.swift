@@ -14,7 +14,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var hotKey: GlobalHotKey?
     private var localKeyMonitor: Any?
     private var lastTargetApplication: NSRunningApplication?
-    private var applicationActivationObserver: NSObjectProtocol?
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -44,9 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if let localKeyMonitor {
             NSEvent.removeMonitor(localKeyMonitor)
         }
-        if let applicationActivationObserver {
-            NSWorkspace.shared.notificationCenter.removeObserver(applicationActivationObserver)
-        }
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -280,17 +277,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     private func observeApplicationChanges() {
-        applicationActivationObserver = NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.didActivateApplicationNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
-                    as? NSRunningApplication else { return }
-            Task { @MainActor in
-                self?.remember(application)
-            }
-        }
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(workspaceDidActivateApplication(_:)),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil
+        )
+    }
+
+    @objc private func workspaceDidActivateApplication(_ notification: Notification) {
+        guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
+                as? NSRunningApplication else { return }
+        remember(application)
     }
 
     private func rememberFrontmostApplication() {
