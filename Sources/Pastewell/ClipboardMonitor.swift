@@ -1,7 +1,7 @@
 import AppKit
 
 @MainActor
-final class ClipboardMonitor {
+final class ClipboardMonitor: NSObject {
     private let pasteboard = NSPasteboard.general
     private var lastChangeCount: Int
     private var ignoredChangeCount: Int?
@@ -18,15 +18,18 @@ final class ClipboardMonitor {
     init(onNewText: @escaping (String, String?, String?) -> Void) {
         lastChangeCount = pasteboard.changeCount
         self.onNewText = onNewText
+        super.init()
     }
 
     func start() {
         guard timer == nil else { return }
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.checkClipboard()
-            }
-        }
+        timer = Timer.scheduledTimer(
+            timeInterval: 0.5,
+            target: self,
+            selector: #selector(timerDidFire),
+            userInfo: nil,
+            repeats: true
+        )
     }
 
     func stop() {
@@ -39,6 +42,10 @@ final class ClipboardMonitor {
         pasteboard.setString(text, forType: .string)
         ignoredChangeCount = pasteboard.changeCount
         lastChangeCount = pasteboard.changeCount
+    }
+
+    @objc private func timerDidFire() {
+        checkClipboard()
     }
 
     private func checkClipboard() {
