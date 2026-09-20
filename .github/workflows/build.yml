@@ -25,4 +25,8 @@ jobs:
             exit "$status"
           fi
       - name: Verify both architectures
-        run: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -archs Pastewell.app/Contents/MacOS/Pastewell | grep -q 'arm64 x86_64'
+        shell: bash
+        run: |
+          archs="$(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -archs Pastewell.app/Contents/MacOS/Pastewell)"
+          grep -qw arm64 <<< "$archs"
+          grep -qw x86_64 <<< "$archs"
