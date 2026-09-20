@@ -12,9 +12,21 @@ jobs:
   release:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build release archive
-        run: ./package-release.sh
+        shell: bash
+        run: |
+          set +e
+          output="$(./package-release.sh 2>&1)"
+          status=$?
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            message="${output//'%'/'%25'}"
+            message="${message//$'\r'/'%0D'}"
+            message="${message//$'\n'/'%0A'}"
+            echo "::error title=Pastewell release build failed::$message"
+            exit "$status"
+          fi
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}

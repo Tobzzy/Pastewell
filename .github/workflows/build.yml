@@ -9,8 +9,20 @@ jobs:
   build:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build universal app
-        run: ./build-app.sh
+        shell: bash
+        run: |
+          set +e
+          output="$(./build-app.sh 2>&1)"
+          status=$?
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            message="${output//'%'/'%25'}"
+            message="${message//$'\r'/'%0D'}"
+            message="${message//$'\n'/'%0A'}"
+            echo "::error title=Pastewell build failed::$message"
+            exit "$status"
+          fi
       - name: Verify both architectures
         run: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -archs Pastewell.app/Contents/MacOS/Pastewell | grep -q 'arm64 x86_64'
